@@ -1,0 +1,38 @@
+# Dependencies and framework output
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Test output
+playwright-report/
+test-results/
+blob-report/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.secret
+
+# Provider-local state
+.vercel/
+.supabase/
+
+# Logs and caches
+*.log
+.cache/
+.turbo/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
