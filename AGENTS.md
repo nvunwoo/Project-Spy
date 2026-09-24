@@ -1,44 +1,19 @@
 # Project-Spy repository instructions
 
-These instructions apply to the entire repository.
+Read docs/CURRENT_STAGE.md and docs/README.md before working. The six game-design documents linked in docs/README.md own the v0.7 game rules. THE_MOLE_GAME_DESIGN_PREP.md is a historical snapshot.
 
-## Read before working
+The project is archived with no further development planned. The main branch is the sole retained branch. GitHub Pages hosts a static, single-browser local training fixture; it is not a secure or networked two-player game. Documentation of possible future work in docs/production/FUTURE_DEVELOPMENT_PLAN.md is reference material only.
 
-1. Read `docs/CURRENT_STAGE.md` first.
-2. Read `docs/CODEX_WORKING_RULES.md` and `docs/technical/TECHNICAL_READINESS.md` before changing technical files.
-3. Treat the six active documents listed in `docs/README.md` as the authoritative game-design rules.
-4. The root `THE_MOLE_GAME_DESIGN_PREP.md` is a historical snapshot, not the active specification.
+If the user later asks to resume development, first reconcile the current design, UI/UX contract, local code, and hosting requirements. Keep deterministic rules independent from React, Three.js, networking, and persistence. A future server must own canonical hidden state, turns, randomness, movement, objectives, economy, and victory and return player-specific projections. Do not infer logical positions from 3D transforms.
 
-## Current boundary
+Preserve source, design, spreadsheet, tests, and history. Never commit real .env files, credentials, provider connection files, tokens, secrets, generated caches, or node_modules. Report static, unit, build, browser, two-client, device, and deployment verification separately.
 
-- Game-design baseline: `v0.5`.
-- Technical-readiness baseline: `t0.1`.
-- Software status remains `NOT STARTED` until the user explicitly authorizes implementation.
-- Technical preparation may update documentation, repository safeguards, and connection-status records.
-- Do not scaffold the application, install project packages, create database schemas, create hosting projects, or deploy without a later explicit implementation or setup instruction.
+<!-- BEGIN:nextjs-agent-rules -->
 
-## Durable implementation rules
+# This is NOT the Next.js you know
 
-- Keep deterministic game rules independent from React, Three.js, networking, and persistence.
-- The server is authoritative for turns, randomness, movement legality, hidden information, objectives, economy, and victory.
-- Never send canonical hidden state to a browser and rely on UI hiding. Return a player-specific projection.
-- Treat 3D movement as presentation of a server-approved logical grid path. Do not infer game state from transforms.
-- Keep secrets out of source, Markdown, logs, screenshots, chat messages, and client-prefixed environment variables.
-- Use basic primitives for the first 3D demo. Preserve an adapter boundary for later GLB/glTF assets.
-- Support both pointer/mouse and touch input; do not make hover the only way to discover or perform an action.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-## Git and deployment
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
-- Use `codex/*` branches for implementation work unless the user requests another branch.
-- Keep commits narrowly scoped and report exactly which checks ran.
-- Prefer a Draft PR and Vercel Preview before merging to `main`.
-- A successful Preview is not approval for Production.
-- Do not merge to `main`, push a production release, or run a production deployment without explicit user authorization.
-- Never commit `.env*` files other than `.env.example`, `.vercel/`, credentials, access tokens, service-role/secret keys, or database passwords.
-
-## Verification
-
-- Distinguish static inspection, type checking, unit tests, builds, browser automation, two-client multiplayer tests, physical tablet tests, Preview verification, and Production verification.
-- Do not claim a runtime behavior passed unless it was exercised in the corresponding environment.
-- Before a code-bearing PR is ready, the expected baseline is lint, typecheck, unit tests, production build, and relevant Playwright desktop/tablet projects.
-
+<!-- END:nextjs-agent-rules -->

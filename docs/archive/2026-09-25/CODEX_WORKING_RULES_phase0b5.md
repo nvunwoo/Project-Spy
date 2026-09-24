@@ -1,0 +1,129 @@
+# Codex 작업 및 문서 관리 규칙
+
+> 문서 상태: 활성 규칙
+> 원문 기준: 섹션 29, 32
+> 기획 기준 버전: v0.6<br>
+> 기술 준비 기준: t0.2<br>
+> 적용 시점: 향후 기획 정리, 개발 세팅, 구현, 검증 작업
+
+## 반드시 지킬 작업 규칙
+
+1. 모든 작업을 시작할 때 [CURRENT_STAGE.md](./CURRENT_STAGE.md)를 확인하고 종료할 때 현재 상태와 다음 작업을 갱신한다.
+2. **TBD**로 표시된 게임 기획을 임의로 확정하지 않는다.
+3. 새로운 게임 규칙이 필요하면 코드에 하드코딩하기 전에 사용자 결정이 필요하다는 점을 남긴다.
+4. 게임 로직과 3D 표현 코드를 분리한다.
+5. 비밀 정보는 클라이언트에 불필요하게 전달하지 않는다.
+6. 중요한 게임 판정은 서버 측에서 처리한다.
+7. 데모 범위 밖의 대규모 시스템을 임의로 추가하지 않는다.
+8. 기능을 가능한 작은 단위로 구현한다.
+9. 각 기능은 최소한의 테스트 가능한 상태까지 만든다.
+10. 불필요한 추상화나 복잡한 아키텍처를 피한다.
+11. 기존 구조를 변경할 경우 변경 이유를 문서화한다.
+12. 기술 방향의 **승인**, 외부 변경의 **실행**, 읽기 전용 **검증**, 후속 **개발 게이트**를 서로 다른 증거로 추적한다.
+13. GitHub·Vercel·Supabase 커넥터에 쓰기 권한이 있어도 사용자의 현재 작업 범위를 넘어 커밋·푸시·PR·외부 프로젝트·DB·배포를 만들지 않는다.
+14. 사용자가 미래 non-production 전달 흐름을 승인했더라도 이는 사용자가 실제로 요청한 변경을 전달하는 권한이다. 요청되지 않은 기능 개발, 프로젝트 생성이나 배포를 시작하는 standing task로 해석하지 않는다.
+15. UI·R3F·HUD·로비·입력 코드를 변경하기 전에 [UI_UX_CONTRACT.md](./technical/UI_UX_CONTRACT.md)를 읽고, 외부 UI 원문이나 스크린샷을 게임 규칙·보안·상태의 권위 자료로 사용하지 않는다.
+16. 한국어 UI를 기본으로 유지하고 hover·색상·Canvas 직접 탭만으로 필수 기능을 제한하지 않는다. 동일 조작을 DOM 제어와 48×48 CSS px 이상의 터치 대상으로 제공한다.
+
+## 비밀값과 계정 보안
+
+- 비밀키, 액세스 토큰, OAuth 토큰, DB 비밀번호, 쿠키, private key, Vercel token과 Supabase secret/service-role 키를 Markdown, 소스 코드, 터미널 출력, 테스트 스냅샷, 로그, 커밋, PR 본문·댓글에 기록하지 않는다.
+- 실제 `.env`, `.env.local`과 CLI 연결 파일은 저장소 추적 대상에서 제외한다. 저장소에는 이름과 용도만 담은 `.env.example` 형식의 자리표시자만 허용한다.
+- `NEXT_PUBLIC_` 변수는 브라우저에 공개된다는 전제로 사용한다. Supabase publishable key처럼 공개를 전제로 한 값만 넣고 권한 있는 secret/service-role 키는 절대 넣지 않는다.
+- 인증은 Codex 커넥터 OAuth, Git Credential Manager, Vercel·Supabase의 공식 로그인과 GitHub/Vercel secret store를 사용한다. 토큰을 명령행에 직접 붙여 넣거나 파일에 하드코딩하지 않는다.
+- 도구 출력에 비밀값이 포함될 가능성이 있으면 전체 값을 읽거나 복사하지 않고 이름·존재·권한 범위만 확인한다.
+- Supabase의 exposed schema 테이블은 실제 생성 단계에서 RLS, 최소 권한과 플레이어별 소유·참가 조건을 함께 검증한다. `service_role`로 클라이언트 권한 오류를 우회하지 않는다.
+
+## Git, PR과 배포 경계
+
+기본 전달 흐름은 다음과 같다.
+
+    codex/* 작업 브랜치
+    ↓
+    타입 검사·린트·단위 테스트·빌드·브라우저/2클라이언트 검증
+    ↓
+    범위를 확인한 의도적인 커밋과 push
+    ↓
+    GitHub Draft PR
+    ↓
+    Vercel Preview Deployment
+    ↓
+    PC·태블릿·1대1 흐름과 콘솔·네트워크 오류 검증
+    ↓
+    사용자 main 병합 승인
+    ↓
+    main 병합 — Vercel 자동 배포 차단 상태
+    ↓
+    사용자 Production 배포 승인
+    ↓
+    Production Deployment
+
+- 새 작업 브랜치는 기본적으로 `codex/*` 이름을 사용한다.
+- 문서·저장소 보호장치만 포함한 최초 `main` 커밋·push는 2026-08-18 사용자가 명시적으로 승인한 일회성 저장소 초기화다. 이는 이후 코드-bearing 변경을 `main`에 직접 push할 권한이 아니다.
+- 후속 승인으로 Vercel project·Git Integration·Preview 범위를 다시 연 뒤에는 사용자가 요청한 변경 범위에서 `codex/*` 커밋·push·Draft PR과 Vercel Preview를 별도 반복 승인 없이 수행할 수 있다. 현재 Phase 0B에서는 이 범위가 보류돼 있다. 범위와 검증 결과는 매번 보고한다.
+- 비-production 브랜치 push는 Vercel Preview만 생성하도록 연결한다. Preview URL과 검증 결과는 Production 상태와 구분해 보고한다.
+- Vercel 프로젝트를 GitHub에 연결하기 전에 별도 승인을 받은 guard-only PR을 `main`에 병합해 remote `main`의 추적되는 `vercel.json`에 `git.deploymentEnabled.main = false`가 실제로 존재하는지 확인한다. 그 뒤 deployment를 만들지 않는 project create/link 경로를 사용하고 Git을 연결하며 Production Branch `main`과 Production deployment 0건을 즉시 읽기 전용으로 검증한다. Dashboard Git import의 최초 `Deploy` 버튼은 Production 생성 가능 작업이므로 별도 Production 승인 없이 누르지 않는다. 명시되지 않은 비-production 브랜치는 이후 Preview를 생성할 수 있다.
+- Draft PR과 Preview 검증 성공은 Production 승인으로 간주하지 않는다.
+- `main` 병합, `vercel --prod`, `vercel deploy --prod`, `vercel promote`, Production alias 변경, Production rollback은 각각 실행 직전에 별도 사용자 승인을 받는다. 한 작업의 승인을 다른 작업의 승인으로 간주하지 않는다.
+- 별도 Production 승인이 있으면 승인된 remote `main` SHA로 별도의 clean detached worktree를 만들고 `HEAD == approved remote main SHA`, `git status --porcelain` 0건, 대상 team·project·environment를 확인한다. lockfile에 고정된 Vercel CLI를 `pnpm exec`으로 실행해 수동 Production을 생성하고 deployment의 source/Git SHA를 사후 검증한다. 기존 작업트리는 reset·clean·checkout 대상으로 쓰지 않으며 자동 배포 차단을 해제하거나 다른 자동 Production branch를 지정하지 않는다.
+- Production DB migration과 RLS 변경도 각각 코드 Preview와 별도의 영향 검토·advisor·회귀 검증·사용자 승인을 거친다. Preview 통과나 Production 코드 배포 승인을 DB 변경 승인으로 간주하지 않는다.
+- 배포 작업은 대상 팀·프로젝트·브랜치·환경을 먼저 읽기 전용으로 확인하고, Preview와 Production을 결과 보고에 명시한다.
+- rollback도 외부 상태를 바꾸는 Production 작업이므로 장애 범위와 대상 deployment를 확인하고 사용자 승인을 받아 수행한다.
+
+TECHNICAL READINESS — PRE-DEVELOPMENT 단계의 1회성 예외로 GitHub private 전환·문서 전용 최초 `main` 기준선과, 사용자가 명시적으로 승인한 빈 Supabase 프로젝트의 서울 리전 대체를 완료했다. 사용자는 2026-08-22에 v0.6·t0.2를 승인하고 `codex/phase-0b-foundation`의 로컬 Phase 0B 개발을 시작하도록 지시했다. 현재 허용 범위는 앱 스캐폴드·fixture UI·순수 규칙과 로컬 검증이며, Docker·Local Supabase·모든 Supabase SDK/CLI·게임 데이터 구성, Vercel project/CLI/Git Integration/Preview와 Production은 명시적으로 보류한다. 후속 개발 변경은 계속 `codex/*` 경계를 따르며 code-bearing 변경을 `main`에 직접 반영하지 않는다.
+
+## 개발 시 우선순위
+
+    게임이 실제로 동작하는가
+    >
+    두 플레이어 결과가 일치하는가
+    >
+    게임 규칙이 올바른가
+    >
+    코드 구조가 유지보수 가능한가
+    >
+    그래픽 완성도
+
+“두 플레이어 결과가 일치”한다는 것은 하나의 권위 있는 게임 판정을 공유한다는 뜻이다. 각 플레이어에게는 [맵과 정보 규칙](./game-design/MAP_AND_INTELLIGENCE.md)에 따라 허용된 적 위치와 사건만 보이며, 숨은 적의 이동·행동·유형은 재생하거나 통보하지 않는다. 데이터 projection은 [DATA_AND_API.md](./technical/DATA_AND_API.md), 화면·DOM·접근성 projection은 [UI_UX_CONTRACT.md](./technical/UI_UX_CONTRACT.md)의 t0.2 계약을 따른다.
+
+## 문서 관리 원칙
+
+게임 기획이 확정될 때마다 해당 주제의 기준 문서를 갱신한다.
+
+상태 표기:
+
+- **CONFIRMED**: 현재 확정된 내용
+- **TBD**: 아직 결정하지 않은 내용
+- **USER INPUT PENDING**: 사용자가 구체 자료나 값을 제공할 예정인 내용
+- **CANDIDATE**: 후보 아이디어
+- **DEPRECATED**: 폐기되었지만 이력 보존이 필요한 과거 기획
+
+## 단일 기준 문서
+
+- [문서 허브](./README.md)의 문서 지도에 각 주제의 소유 문서를 하나만 지정한다.
+- [CURRENT_STAGE.md](./CURRENT_STAGE.md)는 현재 작업 상태와 다음 작업의 단일 기준이다.
+- 같은 규칙을 여러 문서에 독립적으로 복사하지 않고 기준 문서로 연결한다.
+- [OPEN_DECISIONS.md](./production/OPEN_DECISIONS.md)는 질문 상태의 기준이고, 실제 확정 규칙은 각 도메인 문서가 기준이다.
+- 데이터 모델, API, 파일 구조 예시는 확정 계약과 분리해 **CANDIDATE**로 표시한다.
+- MVP 체크박스의 구현 상태와 기획 결정 상태를 혼동하지 않는다.
+- 기술 선택과 실제 외부 서비스 세팅 완료 여부를 분리한다.
+
+## 변경과 보존
+
+- 기획 변경 시 기존 내용을 조용히 삭제하거나 덮어쓰지 않는다.
+- 중요한 변경 사항과 이유는 [CHANGELOG.md](./CHANGELOG.md)에 기록한다.
+- 대체된 과거 기획은 **DEPRECATED**로 표시하고 필요하면 별도 아카이브로 옮긴다.
+- 아직 결정되지 않은 **TBD**와 살아 있는 **CANDIDATE**는 아카이브하지 않는다.
+- 루트의 원문 v0.1은 분할 전 상태 비교를 위한 비권위 스냅샷으로 보존한다.
+
+## 다음 상세 기획 처리 규칙
+
+1. 사용자 표현을 그대로 존중해 확정, 후보, 미정, 범위 제외, 기존 기준과 충돌로 분류한다.
+2. 후보성 표현을 임의로 확정하지 않는다.
+3. [미결정 사항 등록부](./production/OPEN_DECISIONS.md)의 안정적인 질문 ID에 연결한다.
+4. 게임 결과를 크게 바꾸는 충돌이나 구현 필수 누락만 사용자 확인 대상으로 남긴다.
+5. 확정 사항은 **CONFIRMED**, 후보는 **CANDIDATE**, 미정 항목은 **TBD**로 각 소유 문서에 반영한다. 후보를 구현 계약처럼 사용하지 않는다.
+6. 해결된 질문은 삭제하지 않고 **RESOLVED**로 바꾸고 결정 문서 위치를 연결한다.
+7. 게임 규칙 변화가 기술 구조와 MVP에 미치는 영향을 함께 점검한다.
+8. 링크, 상태, 중복 규칙, 미등록 TBD, 상충 규칙을 검증한다.
+9. 현재 단계, 해당 기준 문서, 미결정 사항 등록부, 문서 허브와 변경 이력을 함께 최신화한다.

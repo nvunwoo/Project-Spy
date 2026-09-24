@@ -1,0 +1,5 @@
+allowBuilds:
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - "@next/swc-win32-arm64-msvc@16.3.2"
+  - "@testing-library/user-event@14.6.6"

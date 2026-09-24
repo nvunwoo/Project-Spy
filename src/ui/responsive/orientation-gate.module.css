@@ -1,0 +1,111 @@
+.root {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+.content {
+  min-height: inherit;
+}
+
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ops-z-blocking, 60);
+  display: none;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: auto;
+  padding: max(1.5rem, env(safe-area-inset-top))
+    max(1.5rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom))
+    max(1.5rem, env(safe-area-inset-left));
+  background: var(--ops-bg, #090d12);
+  color: var(--ops-text, #e8edf2);
+  pointer-events: none;
+}
+
+.gatePanel {
+  width: min(100%, 30rem);
+  border: 1px solid var(--ops-border-strong, #3a4856);
+  border-radius: var(--ops-radius-lg, 6px);
+  background: var(--ops-surface-1, #0f151c);
+  padding: clamp(1.5rem, 6vw, 2.5rem);
+}
+
+.deviceMark {
+  width: 4.5rem;
+  height: 2.75rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--ops-info, #6fafc1);
+  border-radius: var(--ops-radius-md, 4px);
+  background: linear-gradient(
+    90deg,
+    transparent 0 68%,
+    color-mix(in srgb, var(--ops-info, #6fafc1) 16%, transparent) 68% 100%
+  );
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--ops-info-strong, #8cc7d4);
+  font-family: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  margin: 0;
+  color: var(--ops-text, #e8edf2);
+  font-family:
+    "Geist Sans", "Geist", "Geist Fallback", "Pretendard Variable", Pretendard,
+    system-ui, sans-serif;
+  font-size: clamp(1.5rem, 7vw, 2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  outline: none;
+}
+
+.title:focus-visible {
+  border-radius: var(--ops-radius-sm, 2px);
+  outline: 2px solid var(--ops-info-strong, #8cc7d4);
+  outline-offset: 0.25rem;
+}
+
+.description {
+  margin: 1rem 0 0;
+  color: var(--ops-text-muted, #98a5b3);
+  font-family:
+    "Geist Sans", "Geist", "Geist Fallback", "Pretendard Variable", Pretendard,
+    system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+@media (orientation: portrait) {
+  .root {
+    overflow: hidden;
+  }
+
+  .content {
+    visibility: hidden;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .gate {
+    display: grid;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate,
+  .gatePanel {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,96 @@
+:root {
+  color-scheme: dark;
+
+  --ops-bg: #090d12;
+  --ops-surface-1: #0f151c;
+  --ops-surface-2: #151d26;
+  --ops-border: #26313d;
+  --ops-border-strong: #3a4856;
+  --ops-text: #e8edf2;
+  --ops-text-muted: #98a5b3;
+  --ops-text-dim: #667482;
+  --ops-info: #6fafc1;
+  --ops-info-strong: #8cc7d4;
+  --ops-warning: #d0a85c;
+  --ops-critical: #b85c5c;
+  --ops-success: #6f9e82;
+  --team-blue: #4f78a8;
+  --team-red: #a35d62;
+
+  --ops-space-1: 0.25rem;
+  --ops-space-2: 0.5rem;
+  --ops-space-3: 0.75rem;
+  --ops-space-4: 1rem;
+  --ops-space-6: 1.5rem;
+  --ops-space-8: 2rem;
+
+  --ops-radius-sm: 2px;
+  --ops-radius-md: 4px;
+  --ops-radius-lg: 6px;
+  --ops-radius-panel: var(--ops-radius-lg);
+  --ops-border-width: 1px;
+  --ops-focus-width: 2px;
+  --ops-hit-target: 3rem;
+
+  --ops-duration-feedback: 80ms;
+  --ops-duration-fast: 140ms;
+  --ops-duration-panel: 220ms;
+  --ops-duration-screen: 320ms;
+  --ops-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --ops-z-canvas: 0;
+  --ops-z-map-overlay: 10;
+  --ops-z-hud: 20;
+  --ops-z-command: 30;
+  --ops-z-toast: 40;
+  --ops-z-modal: 50;
+  --ops-z-blocking: 60;
+}
+
+@theme inline {
+  --color-background: var(--ops-bg);
+  --color-foreground: var(--ops-text);
+  --color-card: var(--ops-surface-1);
+  --color-card-foreground: var(--ops-text);
+  --color-popover: var(--ops-surface-2);
+  --color-popover-foreground: var(--ops-text);
+  --color-primary: var(--ops-info);
+  --color-primary-foreground: var(--ops-bg);
+  --color-secondary: var(--ops-surface-2);
+  --color-secondary-foreground: var(--ops-text);
+  --color-muted: var(--ops-surface-2);
+  --color-muted-foreground: var(--ops-text-muted);
+  --color-accent: var(--ops-info);
+  --color-accent-foreground: var(--ops-bg);
+  --color-destructive: var(--ops-critical);
+  --color-destructive-foreground: var(--ops-text);
+  --color-border: var(--ops-border);
+  --color-input: var(--ops-border-strong);
+  --color-ring: var(--ops-info-strong);
+  --color-info: var(--ops-info);
+  --color-warning: var(--ops-warning);
+  --color-success: var(--ops-success);
+  --color-team-blue: var(--team-blue);
+  --color-team-red: var(--team-red);
+
+  --font-sans:
+    "Geist Sans", "Geist", "Geist Fallback", "Pretendard Variable", Pretendard,
+    system-ui, sans-serif;
+  --font-mono:
+    "Geist Mono", "Geist Mono Fallback", "Pretendard Variable", ui-monospace,
+    monospace;
+
+  --radius-xs: var(--ops-radius-sm);
+  --radius-sm: var(--ops-radius-sm);
+  --radius-md: var(--ops-radius-md);
+  --radius-lg: var(--ops-radius-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ops-duration-feedback: 0ms;
+    --ops-duration-fast: 0ms;
+    --ops-duration-panel: 0ms;
+    --ops-duration-screen: 0ms;
+  }
+}

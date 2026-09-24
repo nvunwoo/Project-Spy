@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [switch] $RequireLocalSupabase,
+    [switch] $RequireVercelCli
+)
 
 $ErrorActionPreference = 'Stop'
 $failures = [System.Collections.Generic.List[string]]::new()
@@ -89,6 +92,95 @@ foreach ($command in $optional) {
     Write-Host ('[INFO] {0}: {1}' -f $command, $detail)
 }
 
+$containerRuntime = $null
+$containerServerVersion = $null
+foreach ($candidate in @('docker', 'podman')) {
+    if (-not (Get-Command $candidate -ErrorAction SilentlyContinue)) {
+        continue
+    }
+
+    try {
+        $serverVersion = & $candidate version --format '{{.Server.Version}}' 2>$null | Select-Object -First 1
+        if (($LASTEXITCODE -eq 0) -and $serverVersion) {
+            $containerRuntime = $candidate
+            $containerServerVersion = $serverVersion.ToString().Trim()
+            break
+        }
+    } catch {
+        $containerRuntime = $null
+        $containerServerVersion = $null
+    }
+}
+
+$projectSupabasePath = Join-Path -Path (Get-Location).Path -ChildPath 'node_modules\.bin\supabase.cmd'
+$projectVercelPath = Join-Path -Path (Get-Location).Path -ChildPath 'node_modules\.bin\vercel.cmd'
+$projectSupabaseVersion = $null
+$projectVercelVersion = $null
+$projectSupabaseDeclared = $false
+$projectVercelDeclared = $false
+$pnpmLockPresent = Test-Path -LiteralPath (Join-Path -Path (Get-Location).Path -ChildPath 'pnpm-lock.yaml')
+$packageJsonPath = Join-Path -Path (Get-Location).Path -ChildPath 'package.json'
+if (Test-Path -LiteralPath $packageJsonPath) {
+    try {
+        $packageJson = Get-Content -LiteralPath $packageJsonPath -Raw -Encoding utf8 | ConvertFrom-Json
+        $projectSupabaseDeclared = $null -ne $packageJson.devDependencies.supabase
+        $projectVercelDeclared = $null -ne $packageJson.devDependencies.vercel
+    } catch {
+        $projectSupabaseDeclared = $false
+        $projectVercelDeclared = $false
+    }
+}
+if (Test-Path -LiteralPath $projectSupabasePath) {
+    $projectSupabaseVersion = & $projectSupabasePath --version 2>$null | Select-Object -First 1
+    if ($projectSupabaseVersion) {
+        $projectSupabaseVersion = $projectSupabaseVersion.ToString().Trim()
+    }
+}
+if (Test-Path -LiteralPath $projectVercelPath) {
+    $projectVercelVersion = & $projectVercelPath --version 2>$null | Select-Object -First 1
+    if ($projectVercelVersion) {
+        $projectVercelVersion = $projectVercelVersion.ToString().Trim()
+    }
+}
+
+$containerDetail = if ($containerRuntime) {
+    ('{0} server {1}' -f $containerRuntime, $containerServerVersion)
+} else {
+    'Docker API-compatible daemon not available'
+}
+$supabaseDetail = if ($projectSupabaseDeclared -and $projectSupabaseVersion) {
+    ('project devDependency {0}' -f $projectSupabaseVersion)
+} elseif (-not $projectSupabaseDeclared) {
+    'package.json does not declare devDependency supabase'
+} else {
+    'project Supabase CLI executable is not installed'
+}
+$vercelDetail = if ($projectVercelDeclared -and $projectVercelVersion -and $pnpmLockPresent) {
+    ('project devDependency {0} with pnpm lockfile' -f $projectVercelVersion)
+} elseif (-not $projectVercelDeclared) {
+    'package.json does not declare devDependency vercel'
+} elseif (-not $pnpmLockPresent) {
+    'pnpm-lock.yaml is missing'
+} else {
+    'project Vercel CLI executable is not installed'
+}
+
+if ($RequireLocalSupabase) {
+    Write-Check -Name 'Local container runtime' -Passed ($null -ne $containerRuntime) -Detail $containerDetail
+    Write-Check -Name 'Project Supabase CLI' -Passed ($projectSupabaseDeclared -and ($null -ne $projectSupabaseVersion)) -Detail $supabaseDetail
+} else {
+    Write-Host ('[INFO] Local container runtime: {0}' -f $containerDetail)
+    Write-Host ('[INFO] Project Supabase CLI: {0}' -f $supabaseDetail)
+    Write-Host '[INFO] Local backend gate is not required in this run. Use -RequireLocalSupabase before starting the Local Supabase phase.'
+}
+
+if ($RequireVercelCli) {
+    Write-Check -Name 'Project Vercel CLI' -Passed ($projectVercelDeclared -and ($null -ne $projectVercelVersion) -and $pnpmLockPresent) -Detail $vercelDetail
+} else {
+    Write-Host ('[INFO] Project Vercel CLI: {0}' -f $vercelDetail)
+    Write-Host '[INFO] Vercel integration gate is not required in this run. Use -RequireVercelCli before Vercel project create/link or Production work.'
+}
+
 if ($failures.Count -gt 0) {
     Write-Host ''
     Write-Host ('Readiness failed with {0} required item(s).' -f $failures.Count)
@@ -96,4 +188,8 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host ''
-Write-Host 'Local development prerequisites are ready. This does not verify accounts, database projects, deployments, or runtime game behavior.'
+if ($RequireLocalSupabase -or $RequireVercelCli) {
+    Write-Host 'Core app and requested project integration prerequisites are ready. This does not verify accounts, remote projects, deployments, or runtime game behavior.'
+} else {
+    Write-Host 'Core app prerequisites are ready. Local Supabase and Vercel project prerequisites were informational only; this does not verify accounts, database projects, deployments, or runtime game behavior.'
+}

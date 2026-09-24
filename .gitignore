@@ -1,5 +1,6 @@
 # Dependencies and framework output
 node_modules/
+.pnpm-store/
 .next/
 out/
 dist/
@@ -35,4 +36,3 @@ blob-report/
 .DS_Store
 Thumbs.db
 Desktop.ini
-
